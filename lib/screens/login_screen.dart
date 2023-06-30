@@ -35,17 +35,17 @@ class _LoginScreenState extends State<LoginScreen> {
             Image.asset('assets/logo-app.png',height: 180,).box.makeCentered(),
             60.heightBox,
             loginWidget(
-            countryCode,
-            () async {
-                    final code = await countryPicker.showPicker(context: context);
-                    if (code != null) {
-                      countryCode = code;
-                      // print(code.name);
-                      // print(code.code);
-                      // print(code.dialCode);
-                    };
-                    setState(() {});
-            }
+                countryCode,
+                () async {
+                        final code = await countryPicker.showPicker(context: context);
+                        if (code != null) {
+                          countryCode = code;
+                          // print(code.name);
+                          // print(code.code);
+                          // print(code.dialCode);
+                        };
+                        setState(() {});
+                }
             ),
           ],
         ).scrollVertical().box.width(Get.width).height(Get.height).make()
