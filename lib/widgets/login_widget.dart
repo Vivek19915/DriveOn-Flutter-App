@@ -10,7 +10,7 @@ import '../screens/otp_verfication_screen.dart';
 import 'text_widget.dart';
 
 
-Widget loginWidget(CountryCode countryCode,onCountryChange) {
+Widget loginWidget(CountryCode countryCode,onCountryChange,onSubmit) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -58,7 +58,7 @@ Widget loginWidget(CountryCode countryCode,onCountryChange) {
             Container().box.width(1).height(55).color(Colors.black.withOpacity(0.2)).roundedSM.make(),
             //ENter your phone no section
             TextField(
-                onTap: (){Get.to(()=> OtpVerfication());},
+              onSubmitted: (String ? input)=>onSubmit(input),
                 decoration: InputDecoration(
               hintStyle: GoogleFonts.poppins(fontSize: 13,fontWeight: FontWeight.normal),
               hintText: enterMobileNumber,

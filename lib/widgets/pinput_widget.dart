@@ -1,3 +1,4 @@
+import 'package:driveon_flutter_app/controller/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +14,9 @@ class RoundedWithShadow extends StatefulWidget {
 class _RoundedWithShadowState extends State<RoundedWithShadow> {
   final controller = TextEditingController();
   final focusNode = FocusNode();
+
+
+  AuthController authController = Get.find<AuthController>();
 
   @override
   void dispose() {
@@ -48,10 +52,11 @@ class _RoundedWithShadowState extends State<RoundedWithShadow> {
     );
 
     return Pinput(
-      length: 6,
+      length: 6,       //length of otp you will enter
       controller: controller,
       focusNode: focusNode,
       onCompleted: (String input){
+        authController.verifyOtp(input);
       },
       defaultPinTheme: defaultPinTheme.copyWith(
         decoration: BoxDecoration(

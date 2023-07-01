@@ -1,5 +1,6 @@
 
 import 'package:driveon_flutter_app/constants/app_constants.dart';
+import 'package:driveon_flutter_app/widgets/otp_verification_widget.dart';
 import 'package:driveon_flutter_app/widgets/text_widget.dart';
 import 'package:fl_country_code_picker/fl_country_code_picker.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:velocity_x/velocity_x.dart';
 
 import '../widgets/bg_widget.dart';
 import '../widgets/login_widget.dart';
+import 'otp_verfication_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,6 +24,11 @@ class _LoginScreenState extends State<LoginScreen> {
   //initializatinon country picker
   final countryPicker = const  FlCountryCodePicker();
   CountryCode countryCode = CountryCode(name: 'India', code: "IN", dialCode: "+91");
+
+  //when we clickright on keyboard this function is called --> and our phone number transfered to next screen
+  onSubmit(String ? input){
+    Get.to(()=>OtpVerfication(countryCode.dialCode+input!));
+  }
 
 
   @override
@@ -45,7 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           // print(code.dialCode);
                         };
                         setState(() {});
-                }
+                },
+              onSubmit
             ),
           ],
         ).scrollVertical().box.width(Get.width).height(Get.height).make()
