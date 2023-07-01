@@ -1,4 +1,5 @@
 import 'package:driveon_flutter_app/screens/login_screen.dart';
+import 'package:driveon_flutter_app/screens/profile_settings.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: LoginScreen(),
+      home: ProfileSettingScreen(),
     );
   }
 }
