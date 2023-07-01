@@ -25,6 +25,7 @@ TextFieldWidget(String title, IconData iconData, TextEditingController controlle
             borderRadius: BorderRadius.circular(8)),
 
         child: TextFormField(
+          controller: controller,
           style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,

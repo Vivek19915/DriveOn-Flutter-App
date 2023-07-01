@@ -1,6 +1,10 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:driveon_flutter_app/screens/home.dart';
+import 'package:driveon_flutter_app/screens/profile_settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -58,5 +62,29 @@ class AuthController extends GetxController{
     log("LogedIn");
 
     await FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
+
+//this function doing two things  ---> decides routes for user
+//   1--> checking whether user is login or not   
+//   2--> whether user profile is complete or not
+  decideRoute(){
+    ///step 1- Check user login?
+    User? user = FirebaseAuth.instance.currentUser;
+    if(user!=null){
+      //means user already login
+      //step 2 --> check whether user profile exist or not
+      FirebaseFirestore.instance.collection('users').doc(user.uid).get()
+          .then((value) {
+            if(value.exists){
+              //means user profile exists ---> then navigate user to home screen
+              Get.to(()=>HomeScreen());
+            }
+            else{
+              //means user does not exists then takes it info
+              Get.to(()=>ProfileSettingScreen());
+            }
+      });
+    }
   }
 }

@@ -20,7 +20,7 @@ class OtpVerfication extends StatefulWidget {
 
 class _OtpVerficationState extends State<OtpVerfication> {
 
-  AuthController authController = Get.put(AuthController());      //initialising controller using getx library--> so that we can use phoneauth function of this class
+  AuthController authController = Get.find<AuthController>();      //initialising controller using getx library--> so that we can use phoneauth function of this class
 
   @override
   void initState() {
