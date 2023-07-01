@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../constants/app_constants.dart';
+import '../screens/otp_verfication_screen.dart';
 import 'text_widget.dart';
 
 
@@ -56,7 +57,9 @@ Widget loginWidget(CountryCode countryCode,onCountryChange) {
             //striaght line sperating both
             Container().box.width(1).height(55).color(Colors.black.withOpacity(0.2)).roundedSM.make(),
             //ENter your phone no section
-            TextField(decoration: InputDecoration(
+            TextField(
+                onTap: (){Get.to(()=> OtpVerfication());},
+                decoration: InputDecoration(
               hintStyle: GoogleFonts.poppins(fontSize: 13,fontWeight: FontWeight.normal),
               hintText: enterMobileNumber,
               border: InputBorder.none,
