@@ -1,12 +1,15 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:driveon_flutter_app/screens/home.dart';
-import 'package:driveon_flutter_app/screens/profile_settings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart' as Path;
+
+import '../screens/home.dart';
+import '../screens/profile_settings.dart';
 
 class AuthController extends GetxController{
 
@@ -15,6 +18,8 @@ class AuthController extends GetxController{
   int? resendTokenId;    //optional integer for storing the token used to resend the verification code if it's not received within a specific time.
   bool phoneAuthCheck = false;  //to check phone auth done or not
   dynamic credentials;       // store the phone authentication credentials.
+
+  var isProfileuploading = false;
 
   phoneAuth(String phone) async {
     try {
@@ -61,7 +66,11 @@ class AuthController extends GetxController{
 
     log("LogedIn");
 
-    await FirebaseAuth.instance.signInWithCredential(credential);
+    await FirebaseAuth.instance.signInWithCredential(credential)
+    .then((value) {
+      //when verficitaion done now routes will decide where to go on
+      decideRoute();
+    });
   }
 
 
@@ -86,5 +95,45 @@ class AuthController extends GetxController{
             }
       });
     }
+  }
+
+
+
+
+  //this method uploads an image file to Firebase Storage and retrieves the download URL of the uploaded image.
+  uploadImage(File image) async {
+    String imageUrl = '';
+    String fileName = Path.basename(image.path);
+    var reference = FirebaseStorage.instance
+        .ref()
+        .child('users/$fileName'); // Modify this path/string as your need
+    UploadTask uploadTask = reference.putFile(image);
+    TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+    await taskSnapshot.ref.getDownloadURL().then(
+          (value) {
+        imageUrl = value;
+        print("Download URL: $value");
+      },
+    );
+    return imageUrl;
+  }
+
+
+  storeUserInfo(File ? selectedImage,String name,String home,String business,String shop)async{
+
+    String url = await uploadImage(selectedImage!);    //here we get the imagurl fro above function
+    String uid = FirebaseAuth.instance.currentUser!.uid;    //gives the uid of currentuser
+    FirebaseFirestore.instance.collection('users').doc(uid).set({
+      //mapping --->
+      'image': url,
+      'name': name,
+      'home_address': home,
+      'business_address': business,
+      'shopping_address': shop,
+    }).then((value) {
+      isProfileuploading = false;
+      Get.to(()=>HomeScreen());
+    });
+
   }
 }

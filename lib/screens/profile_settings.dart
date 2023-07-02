@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:driveon_flutter_app/controller/auth_controller.dart';
 import 'package:driveon_flutter_app/screens/home.dart';
 import 'package:driveon_flutter_app/widgets/bg_widget.dart';
 import 'package:driveon_flutter_app/widgets/text_widget.dart';
@@ -26,7 +27,7 @@ class ProfileSettingScreen extends StatefulWidget {
 
 class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
 
-  bool isLoading = false;
+  AuthController authController = Get.find<AuthController>();
 
   TextEditingController nameController = TextEditingController();
   TextEditingController homeController = TextEditingController();
@@ -44,48 +45,6 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
       selectedImage = File(image.path);
       setState(() {});
     }
-  }
-
-//this method uploads an image file to Firebase Storage and retrieves the download URL of the uploaded image.
-  uploadImage(File image) async {
-    String imageUrl = '';
-    String fileName = Path.basename(image.path);
-    var reference = FirebaseStorage.instance
-        .ref()
-        .child('users/$fileName'); // Modify this path/string as your need
-    UploadTask uploadTask = reference.putFile(image);
-    TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-    await taskSnapshot.ref.getDownloadURL().then(
-          (value) {
-        imageUrl = value;
-        print("Download URL: $value");
-      },
-    );
-    return imageUrl;
-  }
-
-
-  storeUserInfo()async{
-    String url = await uploadImage(selectedImage!);    //here we get the imagurl fro above function
-    String uid = FirebaseAuth.instance.currentUser!.uid;    //gives the uid of currentuser
-    FirebaseFirestore.instance.collection('users').doc(uid).set({
-      //mapping --->
-      'image': url,
-      'name': nameController.text,
-      'home_address': homeController.text,
-      'business_address': businessController.text,
-      'shopping_address': shopController.text,
-    }).then((value) {
-      nameController.clear();
-      homeController.clear();
-      businessController.clear();
-      shopController.clear();
-      setState(() {
-        isLoading = false;
-      });
-      Get.to(()=>HomeScreen());
-    });
-
   }
 
 
@@ -126,7 +85,6 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
                 ),
 
 
-
                 20.heightBox,
 
                 //entering fields
@@ -142,13 +100,22 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
                       10.heightBox,
                       TextFieldWidget('Shopping Center', Icons.shopping_cart_outlined, shopController),
                       30.heightBox,
-                      if(isLoading == true) CircularProgressIndicator(color: greenColor).box.makeCentered()
-                        else greenButton('Submit', (){
-                        setState(() {
-                          isLoading = true;
-                        });
-                        storeUserInfo();
-                      }),
+
+                      //instead of isLoading we are using variable the we define in authcontroller ---> doing this to seperate frontend and backend\
+                      //and putting it in obx since it is statful widget
+                      if(authController.isProfileuploading == true) CircularProgressIndicator(color: greenColor,).box.makeCentered()
+                       else  greenButton('Submit', (){
+                         if(selectedImage==null){
+                           //if user foregot to select image
+                           Get.snackbar('Warning', 'Please select the profile image',backgroundColor: Colors.red);
+                               return;
+                           }
+                         setState(() {
+                           authController.isProfileuploading = true;
+                         });
+                         authController.storeUserInfo(selectedImage!, nameController.text, homeController.text, businessController.text, shopController.text);
+                       }
+                     )
                     ],
                   ),
                 )
