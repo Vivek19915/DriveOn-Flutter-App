@@ -6,12 +6,12 @@ import 'package:velocity_x/velocity_x.dart';
 
 import '../constants/app_colors.dart';
 
-TextFieldWidget(String title, IconData iconData, TextEditingController controller) {
+TextFieldWidget(String title, IconData iconData, TextEditingController controller,Function validator) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       title.text.size(14).fontWeight(FontWeight.w600).color(Colors.black54).make(),
-      6.heightBox,
+      5.heightBox,
       Container(
         width: Get.width,
         decoration: BoxDecoration(
@@ -24,7 +24,10 @@ TextFieldWidget(String title, IconData iconData, TextEditingController controlle
             ],
             borderRadius: BorderRadius.circular(8)),
 
+
+        //note ---> for validation you need text form field
         child: TextFormField(
+          validator: (input)=> validator(input),
           controller: controller,
           style: GoogleFonts.poppins(
               fontSize: 14,

@@ -37,6 +37,9 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
   final ImagePicker _picker = ImagePicker();
   File ? selectedImage;
 
+  //making global key for form widget
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
 
   //function to get image
   getImage(ImageSource source) async {
@@ -55,12 +58,12 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
       child: Scaffold(
         body: SingleChildScrollView(
           child: Container(
-            height: Get.height,
+            // height: Get.height,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                150.heightBox,
+                130.heightBox,
                 textWidget(title: "Profile Setting",fontSize: 24,color: Colors.white,fontWeight: FontWeight.bold).box.makeCentered(),
                 20.heightBox,
 
@@ -90,38 +93,67 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
                 //entering fields
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 23),
-                  child: Column(
-                    children: [
-                      TextFieldWidget('Name', Icons.person_outlined, nameController),
-                      10.heightBox,
-                      TextFieldWidget('Home Address', Icons.home_outlined, homeController),
-                      10.heightBox,
-                      TextFieldWidget('Business Address', Icons.card_travel, businessController),
-                      10.heightBox,
-                      TextFieldWidget('Shopping Center', Icons.shopping_cart_outlined, shopController),
-                      30.heightBox,
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      children: [
+                        TextFieldWidget('Name', Icons.person_outlined, nameController,(String? input){
+                          if(input!.isEmpty){
+                            return 'Name is required!';
+                          }
+                          if(input.length<5)return 'Enter a valid name';
+                          return null;
+                        }),
+                        10.heightBox,
+                        TextFieldWidget('Home Address', Icons.home_outlined, homeController,(String? input){
+                          if(input!.isEmpty){
+                            return 'Home Address is required!';
+                          }
+                          return null;
+                        }),
+                        10.heightBox,
+                        TextFieldWidget('Business Address', Icons.card_travel, businessController,(String? input){
+                          if(input!.isEmpty){
+                            return 'Business Address is required!';
+                          }
+                          return null;
+                        }),
+                        10.heightBox,
+                        TextFieldWidget('Shopping Center', Icons.shopping_cart_outlined, shopController,(String? input){
+                          if(input!.isEmpty){
+                            return 'Shopping Center is required!';
+                          }
+                          return null;
+                        }),
+                        20.heightBox,
 
-                      //instead of isLoading we are using variable the we define in authcontroller ---> doing this to seperate frontend and backend\
-                      //and putting it in obx since it is statful widget
-                      if(authController.isProfileuploading == true) CircularProgressIndicator(color: greenColor,).box.makeCentered()
-                       else  greenButton('Submit', (){
-                         if(selectedImage==null){
-                           //if user foregot to select image
-                           Get.snackbar('Warning', 'Please select the profile image',backgroundColor: Colors.red);
-                               return;
-                           }
-                         setState(() {
-                           authController.isProfileuploading = true;
-                         });
-                         authController.storeUserInfo(selectedImage!, nameController.text, homeController.text, businessController.text, shopController.text);
-                       }
-                     )
-                    ],
+                        //instead of isLoading we are using variable the we define in authcontroller ---> doing this to seperate frontend and backend\
+                        //and putting it in obx since it is statful widget
+                        if(authController.isProfileuploading == true) CircularProgressIndicator(color: greenColor,).box.makeCentered()
+                         else  greenButton('Submit', (){
+
+                           if(formKey.currentState!.validate() == false){return;}
+
+                           if(selectedImage==null){
+                             //🔥🔥Validation for profile image
+                             //if user foregot to select image
+                             Get.snackbar('Warning', 'Please select the profile image',backgroundColor: Colors.red);
+                                 return;
+                             }
+                           setState(() {
+                             authController.isProfileuploading = true;
+                           });
+                           authController.storeUserInfo(selectedImage!, nameController.text, homeController.text, businessController.text, shopController.text);
+                         }
+                       ),
+                        20.heightBox
+                      ],
+                    ),
                   ),
                 )
               ],
             ),
-          ),
+          ).box.make().scrollVertical(),
         ),
       ),
     );
