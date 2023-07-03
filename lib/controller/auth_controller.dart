@@ -5,9 +5,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_webservice/places.dart';
 import 'package:path/path.dart' as Path;
 
+import '../constants/app_apikeys.dart';
 import '../screens/home.dart';
 import '../screens/profile_settings.dart';
 
@@ -134,6 +138,25 @@ class AuthController extends GetxController{
       isProfileuploading = false;
       Get.to(()=>HomeScreen());
     });
-
   }
+
+
+
+  Future<Prediction?> showGoogleAutoComplete(BuildContext context) async {
+    Prediction? p = await PlacesAutocomplete.show(
+      offset: 0,
+      radius: 1000,
+      strictbounds: false,
+      region: "in",
+      language: "en",
+      context: context,
+      mode: Mode.overlay,
+      apiKey: ApiConstants.APIKEY,
+      components: [new Component(Component.country, "in")],
+      types: [],
+      hint: "Search City",
+    );
+    return p;
+  }
+
 }

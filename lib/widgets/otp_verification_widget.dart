@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../constants/app_constants.dart';
@@ -28,7 +27,7 @@ Widget otpVerificationWidget(){
               style: TextStyle(color: Colors.black,fontSize: 12),
               children: [
                 TextSpan(text: resendCode +" "),
-                TextSpan(text: "20 "+ seconds,style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                TextSpan(text: "20 "+ seconds,style: TextStyle(fontWeight: FontWeight.bold)),
               ]
           )
       ).box.make(),

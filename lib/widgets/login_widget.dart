@@ -2,7 +2,6 @@ import 'package:fl_country_code_picker/fl_country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../constants/app_constants.dart';
@@ -60,7 +59,7 @@ Widget loginWidget(CountryCode countryCode,onCountryChange,onSubmit) {
             TextField(
               onSubmitted: (String ? input)=>onSubmit(input),
                 decoration: InputDecoration(
-              hintStyle: GoogleFonts.poppins(fontSize: 13,fontWeight: FontWeight.normal),
+              hintStyle: TextStyle(fontSize: 13,fontWeight: FontWeight.normal),
               hintText: enterMobileNumber,
               border: InputBorder.none,
             )).box.padding(EdgeInsets.symmetric(horizontal: 15)).make().flexible(flex: 3),
@@ -77,9 +76,9 @@ Widget loginWidget(CountryCode countryCode,onCountryChange,onSubmit) {
             style: TextStyle(color: Colors.black,fontSize: 12),
             children: [
               TextSpan(text: byCreating),
-              TextSpan(text: termsOfService,style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              TextSpan(text: termsOfService,style: TextStyle(fontWeight: FontWeight.bold)),
               TextSpan(text: "and "),
-              TextSpan(text: privacyPolicy,style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              TextSpan(text: privacyPolicy,style: TextStyle(fontWeight: FontWeight.bold)),
             ]
           )
       ).box.padding(EdgeInsets.symmetric(horizontal: 10 )).makeCentered(),

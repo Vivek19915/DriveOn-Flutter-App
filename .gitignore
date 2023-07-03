@@ -48,4 +48,6 @@ lib/firebase_options.dart
 imp ss/
 
 #it contains google maps API key
-android/app/src/main/AndroidManifest.xml
+android/app/src/main/
+lib/constants/app_apikeys.dart
+

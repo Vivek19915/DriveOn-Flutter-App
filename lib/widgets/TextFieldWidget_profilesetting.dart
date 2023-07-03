@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../constants/app_colors.dart';
@@ -29,7 +28,7 @@ TextFieldWidget(String title, IconData iconData, TextEditingController controlle
         child: TextFormField(
           validator: (input)=> validator(input),
           controller: controller,
-          style: GoogleFonts.poppins(
+          style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Color(0xffA7A7A7)),
