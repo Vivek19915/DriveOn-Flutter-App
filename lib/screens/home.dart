@@ -46,10 +46,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //creating google maps controller
   GoogleMapController? myMapController;
+  //for opening drawer functionality
+  GlobalKey<ScaffoldState> _scaffoldState = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldState,
+      drawer: buildDrawer(),
       backgroundColor: Colors.white, //since transparent giving green screen
       body: Stack(
         children: [
@@ -88,6 +92,13 @@ class _HomeScreenState extends State<HomeScreen> {
         right: 20,
         child: Row(
           children: [
+
+            //for opening Drawer without using appbar-------->>>>>>>
+            InkWell(
+              onTap: (){_scaffoldState.currentState?.openDrawer();},
+                child: Icon(Icons.menu,color: greenColor,)
+            ),
+
             Image.asset('assets/person.png', width: 70,),
 
             15.widthBox,
@@ -396,6 +407,104 @@ class _HomeScreenState extends State<HomeScreen> {
             )
         ),
       ),
+    );
+  }
+
+
+
+
+  buildDrawerItem({required String title, required Function onPressed, Color color = Colors.black, double fontSize = 20, FontWeight fontWeight = FontWeight.w700, double height = 45, bool isVisible = false}) {
+    return SizedBox(
+      height: height,
+      child: ListTile(
+        contentPadding: EdgeInsets.all(0),
+        dense: true,
+        onTap: () => onPressed(),
+        title: Row(
+          children: [
+            title.text.size(fontSize).fontWeight(fontWeight).color(color).make(),
+            //circular avator for showing TOTAL RIDE HISTORY
+            5.widthBox,
+            if(isVisible==true)CircleAvatar(backgroundColor: greenColor,child: "1".text.white.make(),radius: 10,),
+          ],
+        ))
+    );
+  }
+
+
+
+
+
+  buildDrawer() {
+    return Drawer(
+      backgroundColor: Colors.white,
+      child: Column(
+        children: [
+          Container(
+            height: 150,
+
+            //image and name DrawerHeader
+            child: DrawerHeader(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Image.asset("assets/person.png",fit: BoxFit.cover,).box.width(80).height(80).roundedFull.make(),
+
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      "Good Morning".text.size(14).color(Colors.black.withOpacity(0.28)).fontFamily('Poppins').make(),
+                      "Vivek Kumar".text.size(24).bold.black.make()
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+
+          20.heightBox,
+          Column(
+            children: [
+
+
+              buildDrawerItem(title: 'Payment History', onPressed: () {}),
+              buildDrawerItem(title: 'Ride History', onPressed: () {}, isVisible: true),
+              buildDrawerItem(title: 'Invite Friends', onPressed: () {}),
+              buildDrawerItem(title: 'Promo Codes', onPressed: () {}),
+              buildDrawerItem(title: 'Settings', onPressed: () {}),
+              buildDrawerItem(title: 'Support', onPressed: () {}),
+              buildDrawerItem(title: 'Log Out', onPressed: () {}),
+
+
+            ],
+          ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
+
+
+
+          Spacer(),
+          Divider(),
+
+
+          Column(
+            children: [
+              
+              buildDrawerItem(title: 'Do more', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.15), height: 20),
+              20.heightBox,
+              buildDrawerItem(title: 'Get food delivery', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20),
+              buildDrawerItem(title: 'Make money driving', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20),
+              buildDrawerItem(title: 'Rate us on store', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20,
+              ),
+              
+            ],
+          ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
+
+          20.heightBox,
+
+        ],
+      ),
+
     );
   }
 }
