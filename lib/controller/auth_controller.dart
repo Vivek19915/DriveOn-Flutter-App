@@ -12,6 +12,7 @@ import 'package:google_maps_webservice/places.dart';
 import 'package:path/path.dart' as Path;
 
 import '../constants/app_apikeys.dart';
+import '../models/user_models.dart';
 import '../screens/home.dart';
 import '../screens/profile_settings.dart';
 
@@ -138,6 +139,39 @@ class AuthController extends GetxController{
       isProfileuploading = false;
       Get.to(()=>HomeScreen());
     });
+  }
+
+
+
+
+  updateUserInfo(File? selectedImage, String name, String home, String business, String shop, {String url = '',}) async {
+    String url_new = url;
+    if (selectedImage != null) {
+      url_new = await uploadImage(selectedImage);
+    }
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'image': url_new,
+      'name': name,
+      'home_address': home,
+      'business_address': business,
+      'shopping_address': shop,
+    },SetOptions(merge: true)).then((value) {
+      isProfileuploading = false;
+      Get.to(() => HomeScreen());
+    });
+  }
+
+  var myUserModel = UserModel().obs;          //making it observalble sos that we can reflect changes
+
+  //this function will provide user info so that user can able to update it in MY Profile Section
+  getUserInfoFromFirebase(){
+    String uid = FirebaseAuth.instance.currentUser!.uid;           //gettig user id from auth section
+    FirebaseFirestore.instance.collection('users').doc(uid).snapshots().listen((event) {
+      myUserModel.value = UserModel.fromJson(event.data()!);
+
+    });                    //getting all info of user from firestore using uid of user
+
   }
 
 

@@ -1,3 +1,4 @@
+import 'package:driveon_flutter_app/screens/my_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
@@ -32,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    authController.getUserInfoFromFirebase();
     rootBundle.loadString('assets/map_style.txt').then((string) {
       _mapStyle = string;
     });
@@ -90,46 +92,43 @@ class _HomeScreenState extends State<HomeScreen> {
         top: 60,
         left: 20,
         right: 20,
-        child: Row(
-          children: [
+        child: Obx(()=> Row(
+            children: [
 
-            //for opening Drawer without using appbar-------->>>>>>>
-            InkWell(
-              onTap: (){_scaffoldState.currentState?.openDrawer();},
-                child: Icon(Icons.menu,color: greenColor,)
-            ),
+              //for opening Drawer without using appbar-------->>>>>>>
+              InkWell(
+                  onTap: (){_scaffoldState.currentState?.openDrawer();},
+                  child: Icon(Icons.menu,color: greenColor,)
+              ),
 
-            Image.asset('assets/person.png', width: 70,),
+              //NetworkImage is used to take image from network ----->>>>
+              Image(image: NetworkImage(authController.myUserModel.value.image!),fit: BoxFit.cover,).box.size(80, 80).roundedFull.clip(Clip.antiAlias).make(),
 
-            15.widthBox,
+              15.widthBox,
 
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                RichText(
-                  text: TextSpan(children: [
-                    TextSpan(
-                        text: 'Good Morning, ',
-                        style: TextStyle(color: Colors.black, fontSize: 14)),
-                    TextSpan(
-                        text: "Vivek ",
-                        style: TextStyle(color: Colors.green,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold)),
-                  ]),
-                ),
-                Text(
-                  "Where are you going?",
-                  style: TextStyle(fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                )
-              ],
-            )
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  RichText(
+                    text: TextSpan(children: [
+                      TextSpan(
+                          text: 'Good Morning, ',
+                          style: TextStyle(color: Colors.black, fontSize: 14)),
+                      TextSpan(
+                          text: authController.myUserModel.value.name,
+                          style: TextStyle(color: Colors.green,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold)),
+                    ]),
+                  ).flexible().box.width(180).make(),
+                  "Where are you going?".text.size(16).bold.black.make(),
+                ],
+              )
 
-          ],
-        ).box.width(Get.width).make()
+            ],
+          ).box.width(Get.width).make(),
+        )
     );
   }
 
@@ -216,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  //Widget to enter destination ---->>>>>
+  //Widget to enter source place ---->>>>>
   Widget buildTextFieldForSource() {
     //wrapping with position widget since this widget is called inside stack
     return Positioned(
@@ -436,75 +435,83 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   buildDrawer() {
-    return Drawer(
-      backgroundColor: Colors.white,
-      child: Column(
-        children: [
-          Container(
-            height: 150,
-
-            //image and name DrawerHeader
-            child: DrawerHeader(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Image.asset("assets/person.png",fit: BoxFit.cover,).box.width(80).height(80).roundedFull.make(),
-
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+    return Obx(
+      ()=> Drawer(
+        backgroundColor: Colors.white,
+        child: Column(
+          children: [
+            Container(
+              height: 150,
+              //image and name DrawerHeader
+              //lets make DrawerHeader inkwell so tha we we click on that user can go to MY PROFILE PAGE
+              child: InkWell(
+                onTap: (){Get.to(()=>MyProfileScreen());},
+                child: DrawerHeader(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      "Good Morning".text.size(14).color(Colors.black.withOpacity(0.28)).fontFamily('Poppins').make(),
-                      "Vivek Kumar".text.size(24).bold.black.make()
+
+                      //image
+                      Image(image: NetworkImage(authController.myUserModel.value.image!)).box.height(80).roundedFull.clip(Clip.antiAlias).make(),
+
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          "Good Morning".text.size(14).color(Colors.black.withOpacity(0.28)).fontFamily('Poppins').make(),
+                          //name
+                          authController.myUserModel.value.name!.text.size(20).bold.black.color(greenColor).make().flexible().box.width(140).make()
+                        ],
+                      )
                     ],
-                  )
-                ],
+                  ),
+                ),
               ),
             ),
-          ),
 
-          20.heightBox,
-          Column(
-            children: [
-
-
-              buildDrawerItem(title: 'Payment History', onPressed: () {}),
-              buildDrawerItem(title: 'Ride History', onPressed: () {}, isVisible: true),
-              buildDrawerItem(title: 'Invite Friends', onPressed: () {}),
-              buildDrawerItem(title: 'Promo Codes', onPressed: () {}),
-              buildDrawerItem(title: 'Settings', onPressed: () {}),
-              buildDrawerItem(title: 'Support', onPressed: () {}),
-              buildDrawerItem(title: 'Log Out', onPressed: () {}),
+            20.heightBox,
+            Column(
+              children: [
 
 
-            ],
-          ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
+                buildDrawerItem(title: 'Payment History', onPressed: () {}),
+                buildDrawerItem(title: 'Ride History', onPressed: () {}, isVisible: true),
+                buildDrawerItem(title: 'Invite Friends', onPressed: () {}),
+                buildDrawerItem(title: 'Promo Codes', onPressed: () {}),
+                buildDrawerItem(title: 'Settings', onPressed: () {}),
+                buildDrawerItem(title: 'Support', onPressed: () {}),
+                buildDrawerItem(title: 'Log Out', onPressed: () {}),
+
+
+              ],
+            ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
 
 
 
-          Spacer(),
-          Divider(),
+            Spacer(),
+            Divider(),
 
 
-          Column(
-            children: [
-              
-              buildDrawerItem(title: 'Do more', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.15), height: 20),
-              20.heightBox,
-              buildDrawerItem(title: 'Get food delivery', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20),
-              buildDrawerItem(title: 'Make money driving', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20),
-              buildDrawerItem(title: 'Rate us on store', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20,
-              ),
-              
-            ],
-          ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
+            Column(
+              children: [
 
-          20.heightBox,
+                buildDrawerItem(title: 'Do more', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.15), height: 20),
+                20.heightBox,
+                buildDrawerItem(title: 'Get food delivery', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20),
+                buildDrawerItem(title: 'Make money driving', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20),
+                buildDrawerItem(title: 'Rate us on store', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20,
+                ),
 
-        ],
+              ],
+            ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
+
+            20.heightBox,
+
+          ],
+        ),
+
       ),
-
     );
   }
 }
