@@ -11,10 +11,6 @@ import 'package:velocity_x/velocity_x.dart';
 import '../constants/app_apikeys.dart';
 import '../constants/app_colors.dart';
 import '../controller/auth_controller.dart';
-import '../widgets/build_Notification_icon.dart';
-import '../widgets/build_bottom_sheet.dart';
-import '../widgets/build_current_location_icon.dart';
-import '../widgets/build_text_field.dart';
 import 'package:geocoding/geocoding.dart' as geoCoding ;
 import 'dart:ui' as ui;
 
@@ -37,6 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late LatLng source;
 
   Set<Marker> markers = Set<Marker>();     // all the markers that we are going to show on map is stored in this set
+
+  final Set<Polyline> _setPolyline = {};
 
 
   @override
@@ -79,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
             bottom: 0,
             child: GoogleMap(
               markers: markers,
+              polylines: _setPolyline,
               zoomControlsEnabled: false,
               onMapCreated: (GoogleMapController controller) {
                 myMapController = controller;
@@ -349,6 +348,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             icon: BitmapDescriptor.fromBytes(markIconsforSource)
                           ));
 
+                          //as when user put the source after that polyline will be shown
+                          //therefore we called here
+                          drawPolyLine(place);
+
 
                           //now lets automatically move our map to the selected location
                           // animateCamera updates the location or view of the map on the basis of target
@@ -595,5 +598,20 @@ class _HomeScreenState extends State<HomeScreen> {
     return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
         .buffer.asUint8List();
   }
+
+
+
+  //function to draw ployline between source and destination
+  void drawPolyLine(String placeID){
+    _setPolyline.clear();      //so that previous ployline get removed
+    _setPolyline.add(Polyline(
+        polylineId: PolylineId(placeID),
+        visible: true,
+        points: [source,destination],
+        color: greenColor,
+        width: 3
+    ),);
+  }
+
 
 }
