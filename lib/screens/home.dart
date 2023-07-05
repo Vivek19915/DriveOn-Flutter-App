@@ -4,7 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show ByteData, Uint8List, rootBundle;
 import 'package:google_maps_webservice/places.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -16,6 +16,7 @@ import '../widgets/build_bottom_sheet.dart';
 import '../widgets/build_current_location_icon.dart';
 import '../widgets/build_text_field.dart';
 import 'package:geocoding/geocoding.dart' as geoCoding ;
+import 'dart:ui' as ui;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,6 +46,8 @@ class _HomeScreenState extends State<HomeScreen> {
     rootBundle.loadString('assets/map_style.txt').then((string) {
       _mapStyle = string;
     });
+
+    loadCustomMarker();    //its loads the custom marker for source and destination
   }
 
 
@@ -56,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //creating google maps controller
   GoogleMapController? myMapController;
+
   //for opening drawer functionality
   GlobalKey<ScaffoldState> _scaffoldState = GlobalKey<ScaffoldState>();
 
@@ -113,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
               //NetworkImage is used to take image from network ----->>>>
               Image(image: NetworkImage(authController.myUserModel.value.image!),fit: BoxFit.cover,).box.size(80, 80).roundedFull.clip(Clip.antiAlias).make(),
 
-              15.widthBox,
+                15.widthBox,
 
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,8 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               )
 
-            ],
-          ).box.width(Get.width).make(),
+              ],
+            ).box.width(Get.width).make(),
         )
     );
   }
@@ -163,7 +167,6 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController sourceController = TextEditingController();
 
   bool showSourceField = false;
-
 
 
   //Widget to enter destination ---->>>>>
@@ -194,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () async {
               //To show seleted place on text filed controller
 
-              String selectedPlace  = await showGoogleAutoComplete();
+              String selectedPlace = await showGoogleAutoComplete();
               destinationController.text = selectedPlace;
 
               List<geoCoding.Location> locations = await geoCoding.locationFromAddress(selectedPlace);  //it gives us the list of all info about location
@@ -206,6 +209,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: 'Destination: $selectedPlace',
                 ),
                 position: destination,
+
+                //now show custom marker on destination
+                icon: BitmapDescriptor.fromBytes(markIconsforDestination)
               ));
 
 
@@ -219,7 +225,6 @@ class _HomeScreenState extends State<HomeScreen> {
               setState(() {
                 showSourceField = true;
               });
-
             },
             style: TextStyle(
               fontFamily: 'Poppins',
@@ -270,7 +275,6 @@ class _HomeScreenState extends State<HomeScreen> {
             controller: sourceController,
             readOnly: true,
             onTap: () async {
-
               //bottomsheet when you click on your location
               Get.bottomSheet(
                   Column(
@@ -325,12 +329,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       InkWell(
                         onTap: () async {
                           Get.back();
-                         String place = await showGoogleAutoComplete();
-                         //assigning that place value to source controller
+                          String place = await showGoogleAutoComplete();
+                          //assigning that place value to source controller
                           sourceController.text = place;
 
-                          List<geoCoding.Location> locationssource = await geoCoding.locationFromAddress(place);  //it gives us the list of all info about location
-                          source = LatLng(locationssource.first.latitude, locationssource.first.longitude);     //stroring longitude and latitude
+                          List<geoCoding.Location> locationssource = await geoCoding.locationFromAddress(place); //it gives us the list of all info about location
+                          source = LatLng(locationssource.first.latitude, locationssource.first.longitude); //stroring longitude and latitude
 
                           if (markers.length >= 2) {
                             markers.remove(markers.last);
@@ -342,15 +346,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               title: 'Source: $place',
                             ),
                             position: source,
+                            icon: BitmapDescriptor.fromBytes(markIconsforSource)
                           ));
 
 
                           //now lets automatically move our map to the selected location
                           // animateCamera updates the location or view of the map on the basis of target
                           myMapController!.animateCamera(CameraUpdate.newCameraPosition(
-                              CameraPosition(target: source, zoom: 14)
-                            //17 is new zoom level
-                          ));
+                                  CameraPosition(target: source, zoom: 14)
+                                //17 is new zoom level
+                              ));
 
                           setState(() {
 
@@ -374,10 +379,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ])).make(),
                       ),
                     ],
-                  ).box.color(Colors.white).width(Get.width).height(Get.height*0.5).padding(EdgeInsets.symmetric(horizontal: 20,vertical: 10)).margin(EdgeInsets.symmetric(horizontal: 10)).roundedSM.make()
+                  ).box.color(Colors.white).width(Get.width).height(Get.height * 0.5).padding(EdgeInsets.symmetric(horizontal: 20, vertical: 10)).margin(EdgeInsets.symmetric(horizontal: 10)).roundedSM.make()
               );
-
-
             },
             style: TextStyle(
               fontFamily: 'Poppins',
@@ -472,24 +475,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   buildDrawerItem({required String title, required Function onPressed, Color color = Colors.black, double fontSize = 20, FontWeight fontWeight = FontWeight.w700, double height = 45, bool isVisible = false}) {
     return SizedBox(
-      height: height,
-      child: ListTile(
-        contentPadding: EdgeInsets.all(0),
-        dense: true,
-        onTap: () => onPressed(),
-        title: Row(
-          children: [
-            title.text.size(fontSize).fontWeight(fontWeight).color(color).make(),
-            //circular avator for showing TOTAL RIDE HISTORY
-            5.widthBox,
-            if(isVisible==true)CircleAvatar(backgroundColor: greenColor,child: "1".text.white.make(),radius: 10,),
-          ],
-        ))
+        height: height,
+        child: ListTile(
+            contentPadding: EdgeInsets.all(0),
+            dense: true,
+            onTap: () => onPressed(),
+            title: Row(
+              children: [
+                title.text.size(fontSize).fontWeight(fontWeight)
+                    .color(color)
+                    .make(),
+                //circular avator for showing TOTAL RIDE HISTORY
+                5.widthBox,
+                if(isVisible == true)CircleAvatar(backgroundColor: greenColor,
+                  child: "1".text.white.make(),
+                  radius: 10,),
+              ],
+            ))
     );
   }
-
-
-
 
 
   buildDrawer() {
@@ -528,9 +532,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            20.heightBox,
-            Column(
-              children: [
+                20.heightBox,
+                Column(
+                  children: [
 
 
                 buildDrawerItem(title: 'Payment History', onPressed: () {}),
@@ -542,17 +546,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 buildDrawerItem(title: 'Log Out', onPressed: () {}),
 
 
-              ],
-            ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
+                  ],
+                ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
 
 
+                Spacer(),
+                Divider(),
 
-            Spacer(),
-            Divider(),
 
-
-            Column(
-              children: [
+                Column(
+                  children: [
 
                 buildDrawerItem(title: 'Do more', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black.withOpacity(0.15), height: 20),
                 20.heightBox,
@@ -561,15 +564,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 buildDrawerItem(title: 'Rate us on store', onPressed: () {}, fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black.withOpacity(0.15), height: 20,
                 ),
 
+                  ],
+                ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
+
+                20.heightBox,
+
               ],
-            ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
+            ),
 
-            20.heightBox,
-
-          ],
-        ),
-
-      ),
+          ),
     );
   }
+
+
+  //Code to load custom markers on destination and source------>>>>>>>
+  late Uint8List markIconsforDestination;
+  late Uint8List markIconsforSource;
+
+  loadCustomMarker() async {
+    //it loads the mrker from asset folder
+    markIconsforDestination = await loadAsset('assets/dest_marker.png', 100);
+    markIconsforSource = await loadAsset('assets/source_marker.png', 100);
+  }
+
+  Future<Uint8List> loadAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
+        targetHeight: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+        .buffer.asUint8List();
+  }
+
 }
