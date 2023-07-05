@@ -15,6 +15,7 @@ import '../widgets/build_Notification_icon.dart';
 import '../widgets/build_bottom_sheet.dart';
 import '../widgets/build_current_location_icon.dart';
 import '../widgets/build_text_field.dart';
+import 'package:geocoding/geocoding.dart' as geoCoding ;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +30,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String? _mapStyle;
   AuthController authController = Get.find<AuthController>();
+
+  //longitudes and latitudes variables
+  late LatLng destination;
+  late LatLng source;
+
+  Set<Marker> markers = Set<Marker>();     // all the markers that we are going to show on map is stored in this set
+
 
   @override
   void initState() {
@@ -66,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
             right: 0,
             bottom: 0,
             child: GoogleMap(
+              markers: markers,
               zoomControlsEnabled: false,
               onMapCreated: (GoogleMapController controller) {
                 myMapController = controller;
@@ -183,9 +192,29 @@ class _HomeScreenState extends State<HomeScreen> {
             controller: destinationController,
             readOnly: true,
             onTap: () async {
+              //To show seleted place on text filed controller
 
               String selectedPlace  = await showGoogleAutoComplete();
               destinationController.text = selectedPlace;
+
+              List<geoCoding.Location> locations = await geoCoding.locationFromAddress(selectedPlace);  //it gives us the list of all info about location
+              destination = LatLng(locations.first.latitude, locations.first.longitude);     //stroring longitude and latitude
+              //so now lets put RED marker on the selected place which is destination
+              markers.add(Marker(
+                markerId: MarkerId(selectedPlace),
+                infoWindow: InfoWindow(
+                  title: 'Destination: $selectedPlace',
+                ),
+                position: destination,
+              ));
+
+
+              //now lets automatically move our map to the selected location
+              // animateCamera updates the location or view of the map on the basis of target
+              myMapController!.animateCamera(CameraUpdate.newCameraPosition(
+                  CameraPosition(target: destination, zoom: 14)
+                //17 is new zoom level
+              ));
 
               setState(() {
                 showSourceField = true;
@@ -299,7 +328,36 @@ class _HomeScreenState extends State<HomeScreen> {
                          String place = await showGoogleAutoComplete();
                          //assigning that place value to source controller
                           sourceController.text = place;
+
+                          List<geoCoding.Location> locationssource = await geoCoding.locationFromAddress(place);  //it gives us the list of all info about location
+                          source = LatLng(locationssource.first.latitude, locationssource.first.longitude);     //stroring longitude and latitude
+
+                          if (markers.length >= 2) {
+                            markers.remove(markers.last);
+                          }
+                          //so now lets put RED marker on the selected place which is destination
+                          markers.add(Marker(
+                            markerId: MarkerId(place),
+                            infoWindow: InfoWindow(
+                              title: 'Source: $place',
+                            ),
+                            position: source,
+                          ));
+
+
+                          //now lets automatically move our map to the selected location
+                          // animateCamera updates the location or view of the map on the basis of target
+                          myMapController!.animateCamera(CameraUpdate.newCameraPosition(
+                              CameraPosition(target: source, zoom: 14)
+                            //17 is new zoom level
+                          ));
+
+                          setState(() {
+
+                          });
                         },
+
+
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
