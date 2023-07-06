@@ -11,7 +11,7 @@ class UserModel {
   LatLng? bussinessAddresLatLang;
   LatLng? shoppingAddressLatLang;
   //constructor for assigning values
-  UserModel({this.name,this.mallAddress,this.hAddress,this.bAddress,this.image});
+  UserModel({this.name,this.mallAddress,this.hAddress,this.bAddress,this.image,this.shoppingAddressLatLang,this.bussinessAddresLatLang,this.homeAddressLatLang});
 
 
   // Named constructor  --->>> This constructor allows you to create an instance of UserModel by providing a Map object representing JSON data.

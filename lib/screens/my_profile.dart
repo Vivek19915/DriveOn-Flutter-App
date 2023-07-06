@@ -124,54 +124,59 @@ class _MyProfileScreen extends State<MyProfileScreen> {
                     child: Column(
                       children: [
                         TextFieldWidget(
-                          title: 'Name', iconData:  Icons.person_outlined,controller:  nameController,validator: (String? input){
+                          title: 'Name', iconData:
+                          Icons.person_outlined,controller:
+                          nameController,validator: (String? input){
 
-                          if(input!.isEmpty){
-                            return 'Name is required!';
-                          }
+                                if(input!.isEmpty){
+                                  return 'Name is required!';
+                                }
 
-                          if(input.length<5){
-                            return 'Please enter a valid name!';
-                          }
+                                if(input.length<5){
+                                  return 'Please enter a valid name!';
+                                }
 
-                          return null;
+                                return null;
 
-                        },readOnly: false,OnTap: ()=>{}),
-                        const SizedBox(
-                          height: 10,
+                              },
+                            readOnly: false,
+                            OnTap: ()=>{}
                         ),
+                        10.heightBox,
                         TextFieldWidget(
-                            title: 'Home Address',iconData:  Icons.home_outlined,controller:  homeController,validator: (String? input){
+                            title: 'Home Address',
+                            iconData:  Icons.home_outlined,
+                            controller:  homeController,validator: (String? input){
 
-                          if(input!.isEmpty){
-                            return 'Home Address is required!';
-                          }
+                                      if(input!.isEmpty){
+                                        return 'Home Address is required!';
+                                      }
 
-                          return null;
+                                      return null;
 
-                        },OnTap: ()async{
-                          Prediction? p = await  authController.showGoogleAutoComplete(context);
+                                },
+                            OnTap: ()async{
+                              Prediction? p = await  authController.showGoogleAutoComplete(context);
 
-                          /// now let's translate this selected address and convert it to latlng obj
+                              /// now let's translate this selected address and convert it to latlng obj
 
-                          homeAddress = await authController.buildLongitudeAndLatitudeFromAddress(p!.description!);
-                          homeController.text = p.description!;
-                          ///store this information into firebase together once update is clicked
-
-
-
-                        },readOnly: true),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TextFieldWidget(title: 'Business Address', iconData: Icons.card_travel,
+                              homeAddress = await authController.buildLongitudeAndLatitudeFromAddress(p!.description!);
+                              homeController.text = p.description!;
+                              ///store this information into firebase together once update is clicked
+                             },
+                            readOnly: true),
+                        10.heightBox,
+                        TextFieldWidget(
+                            title: 'Business Address',
+                            iconData: Icons.card_travel,
                             controller: businessController,validator: (String? input){
                               if(input!.isEmpty){
                                 return 'Business Address is required!';
                               }
 
                               return null;
-                            },OnTap: ()async{
+                            },
+                            OnTap: ()async{
                               Prediction? p = await  authController.showGoogleAutoComplete(context);
 
                               /// now let's translate this selected address and convert it to latlng obj
@@ -180,18 +185,21 @@ class _MyProfileScreen extends State<MyProfileScreen> {
                               businessController.text = p.description!;
                               ///store this information into firebase together once update is clicked
 
-                            },readOnly: true),
-                        const SizedBox(
-                          height: 10,
+                            },
+                            readOnly: true
                         ),
-                        TextFieldWidget(title: 'Shopping Center',
-                            iconData: Icons.shopping_cart_outlined, controller: shopController,validator: (String? input){
+                        10.heightBox,
+                        TextFieldWidget(
+                            title: 'Shopping Center',
+                            iconData: Icons.shopping_cart_outlined,
+                            controller: shopController,validator: (String? input){
                               if(input!.isEmpty){
                                 return 'Shopping Center is required!';
                               }
 
                               return null;
-                            },OnTap: ()async{
+                            },
+                            OnTap: ()async{
                               Prediction? p = await  authController.showGoogleAutoComplete(context);
 
                               /// now let's translate this selected address and convert it to latlng obj
@@ -200,10 +208,9 @@ class _MyProfileScreen extends State<MyProfileScreen> {
                               shopController.text = p.description!;
                               ///store this information into firebase together once update is clicked
 
-                            },readOnly: true),
-                        const SizedBox(
-                          height: 30,
-                        ),
+                            },
+                            readOnly: true),
+                        20.heightBox,
 
 
                         //instead of isLoading we are using variable the we define in authcontroller ---> doing this to seperate frontend and backend\
@@ -218,7 +225,17 @@ class _MyProfileScreen extends State<MyProfileScreen> {
                           setState(() {
                             authController.isProfileuploading = true;
                           });
-                          authController.updateUserInfo(selectedImage!, nameController.text, homeController.text, businessController.text, shopController.text);
+                          authController.updateUserInfo(
+                              selectedImage!,
+                              nameController.text,
+                              homeController.text,
+                              businessController.text,
+                              shopController.text,
+                              url: authController.myUserModel.value.image??"",
+                              homeLatLng: homeAddress,
+                              businessLatLng: businessAddress,
+                              shoppingLatLng: shoppingAddress,
+                          );
                         }
                         ),
                         20.heightBox

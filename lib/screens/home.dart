@@ -14,6 +14,8 @@ import '../controller/auth_controller.dart';
 import 'package:geocoding/geocoding.dart' as geoCoding ;
 import 'dart:ui' as ui;
 
+import '../controller/polyline_handler.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -77,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
             bottom: 0,
             child: GoogleMap(
               markers: markers,
-              polylines: _setPolyline,
+              polylines: polyline,
               zoomControlsEnabled: false,
               onMapCreated: (GoogleMapController controller) {
                 myMapController = controller;
@@ -261,120 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
             readOnly: true,
             onTap: () async {
               //bottomsheet when you click on your location
-              Get.bottomSheet(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      10.heightBox,
-                      "Select Your Location".text.color(Colors.black).size(20).bold.make(),
-                      20.heightBox,
-                      "Home Address".text.color(Colors.black).size(16).bold.make(),
-                      10.heightBox,
-
-
-                      InkWell(
-                        child: Row(
-                          children: [
-                            //showing home address
-                            authController.myUserModel.value.hAddress!.text.color(Colors.black).size(12).fontWeight(FontWeight.w600).make(),
-                          ],
-                        ).box.width(Get.width).height(50).padding(EdgeInsets.symmetric(horizontal: 10)).color(Colors.white).withDecoration(BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  spreadRadius: 4,
-                                  blurRadius: 10)
-                            ])).make(),
-                      ),
-                      20.heightBox,
-                      "Business Address".text.color(Colors.black).size(16).bold.make(),
-                      10.heightBox,
-
-
-                      InkWell(
-                        child: Row(
-                          children: [
-                            //showing users business address
-                            authController.myUserModel.value.bAddress!.text.color(Colors.black).size(12).fontWeight(FontWeight.w600).make(),
-                          ],
-                        ).box.width(Get.width).height(50).padding(EdgeInsets.symmetric(horizontal: 10)).color(Colors.white).withDecoration(BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  spreadRadius: 4,
-                                  blurRadius: 10)
-                            ])).make(),
-                      ),
-                      20.heightBox,
-
-
-                      InkWell(
-                        onTap: () async {
-                          Get.back();
-                          Prediction? p = await authController.showGoogleAutoComplete(context);
-                          String place = p!.description!;
-                          //assigning that place value to source controller
-                          sourceController.text = place;
-
-                          // List<geoCoding.Location> locationssource = await geoCoding.locationFromAddress(place); //it gives us the list of all info about location
-                          // source = LatLng(locationssource.first.latitude, locationssource.first.longitude); //stroring longitude and latitude
-
-                          source = await authController.buildLongitudeAndLatitudeFromAddress(place);
-
-                          if (markers.length >= 2) {
-                            markers.remove(markers.last);
-                          }
-                          //so now lets put RED marker on the selected place which is destination
-                          markers.add(Marker(
-                            markerId: MarkerId(place),
-                            infoWindow: InfoWindow(
-                              title: 'Source: $place',
-                            ),
-                            position: source,
-                            icon: BitmapDescriptor.fromBytes(markIconsforSource)
-                          ));
-
-                          //as when user put the source after that polyline will be shown
-                          //therefore we called here
-                          drawPolyLine(place);
-
-
-                          //now lets automatically move our map to the selected location
-                          // animateCamera updates the location or view of the map on the basis of target
-                          myMapController!.animateCamera(CameraUpdate.newCameraPosition(
-                                  CameraPosition(target: source, zoom: 14)
-                                //17 is new zoom level
-                              ));
-
-                          setState(() {
-
-                          });
-                        },
-
-
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            "Search for Address".text.color(Colors.white).size(12).fontWeight(FontWeight.bold).make(),
-                          ],
-                        ).box.width(Get.width).height(50).padding(EdgeInsets.symmetric(horizontal: 10)).withDecoration(BoxDecoration(
-                            color: Colors.lightGreen,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  spreadRadius: 4,
-                                  blurRadius: 10)
-                            ])).make(),
-                      ),
-                    ],
-                  ).box.color(Colors.white).width(Get.width).height(Get.height * 0.5).padding(EdgeInsets.symmetric(horizontal: 20, vertical: 10)).margin(EdgeInsets.symmetric(horizontal: 10)).roundedSM.make()
-              );
+              buildBottomSouceSheet();
             },
             style: TextStyle(
               fontFamily: 'Poppins',
@@ -602,6 +491,176 @@ class _HomeScreenState extends State<HomeScreen> {
         color: greenColor,
         width: 3
     ),);
+  }
+
+
+  //bottom souce sheet when you click on your location
+  void buildBottomSouceSheet() {
+    Get.bottomSheet(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            10.heightBox,
+            "Select Your Location".text.color(Colors.black).size(20).bold.make(),
+            20.heightBox,
+            "Home Address".text.color(Colors.black).size(16).bold.make(),
+            10.heightBox,
+
+
+            InkWell(
+              onTap: ()async {
+                Get.back();
+                source = authController.myUserModel.value.homeAddressLatLang!;
+                sourceController.text = authController.myUserModel.value.hAddress!;
+
+                if (markers.length >= 2) {
+                  markers.remove(markers.last);
+                }
+                markers.add(Marker(
+                    markerId: MarkerId(authController.myUserModel.value.hAddress!),
+                    infoWindow: InfoWindow(
+                      title: 'Source: ${authController.myUserModel.value.hAddress!}',
+                    ),
+                    position: source,
+                    icon: BitmapDescriptor.fromBytes(markIconsforSource)
+                ));
+
+                await getPolylines(source,destination);
+                // drawPolyline(place);
+
+                myMapController!.animateCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(target: source, zoom: 14)));
+                setState(() {});
+
+                  },
+              child: Row(
+                children: [
+                  //showing home address
+                  authController.myUserModel.value.hAddress!.text.color(Colors.black).size(12).fontWeight(FontWeight.w600).make(),
+                ],
+              ).box.height(50).padding(EdgeInsets.symmetric(horizontal: 10)).color(Colors.white).withDecoration(BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        spreadRadius: 4,
+                        blurRadius: 10)
+                  ])).make().scrollHorizontal(),
+            ),
+            20.heightBox,
+            "Business Address".text.color(Colors.black).size(16).bold.make(),
+            10.heightBox,
+
+
+            InkWell(
+              onTap: ()async {
+                Get.back();
+                source = authController.myUserModel.value.bussinessAddresLatLang!;
+                sourceController.text = authController.myUserModel.value.bAddress!;
+
+                if (markers.length >= 2) {
+                  markers.remove(markers.last);
+                }
+                markers.add(Marker(
+                    markerId: MarkerId(authController.myUserModel.value.bAddress!),
+                    infoWindow: InfoWindow(
+                      title: 'Source: ${authController.myUserModel.value.bAddress!}',
+                    ),
+                    position: source,
+                    icon: BitmapDescriptor.fromBytes(markIconsforSource)
+                ));
+
+                await getPolylines(source,destination);
+                // drawPolyline(place);
+
+                myMapController!.animateCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(target: source, zoom: 14)));
+                setState(() {});
+
+              },
+              child: Row(
+                children: [
+                  //showing users business address
+                  authController.myUserModel.value.bAddress!.text.color(Colors.black).size(12).fontWeight(FontWeight.w600).make(),
+                ],
+              ).box.height(50).padding(EdgeInsets.symmetric(horizontal: 10)).color(Colors.white).withDecoration(BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        spreadRadius: 4,
+                        blurRadius: 10)
+                  ])).make().scrollHorizontal(),
+            ),
+            20.heightBox,
+
+
+            InkWell(
+              onTap: () async {
+                Get.back();
+                Prediction? p = await authController.showGoogleAutoComplete(context);
+                String place = p!.description!;
+                //assigning that place value to source controller
+                sourceController.text = place;
+
+                // List<geoCoding.Location> locationssource = await geoCoding.locationFromAddress(place); //it gives us the list of all info about location
+                // source = LatLng(locationssource.first.latitude, locationssource.first.longitude); //stroring longitude and latitude
+
+                source = await authController.buildLongitudeAndLatitudeFromAddress(place);
+
+                if (markers.length >= 2) {
+                  markers.remove(markers.last);
+                }
+                //so now lets put RED marker on the selected place which is destination
+                markers.add(Marker(
+                    markerId: MarkerId(place),
+                    infoWindow: InfoWindow(
+                      title: 'Source: $place',
+                    ),
+                    position: source,
+                    icon: BitmapDescriptor.fromBytes(markIconsforSource)
+                ));
+
+                //as when user put the source after that polyline will be shown
+                //therefore we called here
+                await getPolylines(source, destination);
+                // drawPolyLine(place);
+
+
+                //now lets automatically move our map to the selected location
+                // animateCamera updates the location or view of the map on the basis of target
+                myMapController!.animateCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(target: source, zoom: 14)
+                  //17 is new zoom level
+                ));
+
+                setState(() {
+
+                });
+              },
+
+
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  "Search for Address".text.color(Colors.white).size(12).fontWeight(FontWeight.bold).make(),
+                ],
+              ).box.width(Get.width).height(50).padding(EdgeInsets.symmetric(horizontal: 10)).withDecoration(BoxDecoration(
+                  color: Colors.lightGreen,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        spreadRadius: 4,
+                        blurRadius: 10)
+                  ])).make(),
+            ),
+          ],
+        ).box.color(Colors.white).width(Get.width).height(Get.height * 0.5).padding(EdgeInsets.symmetric(horizontal: 20, vertical: 10)).margin(EdgeInsets.symmetric(horizontal: 10)).roundedSM.make()
+    );
   }
 
 
