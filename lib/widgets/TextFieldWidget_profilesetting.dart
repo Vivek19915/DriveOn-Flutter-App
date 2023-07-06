@@ -1,3 +1,5 @@
+
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -5,11 +7,12 @@ import 'package:velocity_x/velocity_x.dart';
 
 import '../constants/app_colors.dart';
 
-TextFieldWidget(String title, IconData iconData, TextEditingController controller,Function validator) {
+//Those are in {} are the optional parameters--->>>>
+TextFieldWidget({String? title, IconData? iconData, TextEditingController? controller,Function? validator,Function? OnTap, bool readOnly  = false}) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      title.text.size(14).fontWeight(FontWeight.w600).color(Colors.black54).make(),
+      title!.text.size(14).fontWeight(FontWeight.w600).color(Colors.black54).make(),
       5.heightBox,
       Container(
         width: Get.width,
@@ -26,7 +29,9 @@ TextFieldWidget(String title, IconData iconData, TextEditingController controlle
 
         //note ---> for validation you need text form field
         child: TextFormField(
-          validator: (input)=> validator(input),
+          readOnly: readOnly,
+          onTap: ()=>OnTap!(),
+          validator: (input)=> validator!(input),
           controller: controller,
           style: TextStyle(
               fontSize: 14,

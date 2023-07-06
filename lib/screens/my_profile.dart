@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:driveon_flutter_app/controller/auth_controller.dart';
 import 'package:driveon_flutter_app/screens/home.dart';
@@ -9,6 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_webservice/places.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -39,6 +40,11 @@ class _MyProfileScreen extends State<MyProfileScreen> {
   //making global key for form widget
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
+  //to store latitude and longitude
+  late LatLng homeAddress;
+  late LatLng businessAddress;
+  late LatLng shoppingAddress;
+
 
   //function to get image
   getImage(ImageSource source) async {
@@ -55,11 +61,14 @@ class _MyProfileScreen extends State<MyProfileScreen> {
     // TODO: implement initState
     super.initState();
     //imp --> since you first need to fecth the imp
-    authController.getUserInfoFromFirebase();
-    nameController.text = authController.myUserModel.value.name!;
-    homeController.text = authController.myUserModel.value.hAddress!;
-    businessController.text = authController.myUserModel.value.bAddress!;
-    shopController.text = authController.myUserModel.value.mallAddress!;
+    nameController.text = authController.myUserModel.value.name??"";
+    homeController.text = authController.myUserModel.value.hAddress??"";
+    shopController.text = authController.myUserModel.value.mallAddress??"";
+    businessController.text = authController.myUserModel.value.bAddress??"";
+
+    homeAddress = authController.myUserModel.value.homeAddressLatLang!;
+    businessAddress = authController.myUserModel.value.bussinessAddresLatLang!;
+    shoppingAddress = authController.myUserModel.value.shoppingAddressLatLang!;
 
   }
 
@@ -101,19 +110,7 @@ class _MyProfileScreen extends State<MyProfileScreen> {
 
                     : Image(image: FileImage(selectedImage!),fit: BoxFit.cover,)
                         .box.width(120).height(120).margin(EdgeInsets.only(bottom: 20)).roundedFull.color(Color(0xffD6D6D6)).clip(Clip.antiAlias).makeCentered()
-                    //     :Center(
-                    //       child: Container(
-                    //   width: 120,
-                    //   height: 120,
-                    //   margin: EdgeInsets.only(bottom: 20),
-                    //   decoration: BoxDecoration(
-                    //         image: DecorationImage(
-                    //             image: FileImage(selectedImage!),
-                    //             fit: BoxFit.fill),
-                    //         shape: BoxShape.circle,
-                    //         color: Color(0xffD6D6D6)),
-                    // ),
-                    //     )
+
                 ),
 
 
@@ -126,42 +123,94 @@ class _MyProfileScreen extends State<MyProfileScreen> {
                     key: formKey,
                     child: Column(
                       children: [
-                        TextFieldWidget('Name', Icons.person_outlined, nameController,(String? input){
+                        TextFieldWidget(
+                          title: 'Name', iconData:  Icons.person_outlined,controller:  nameController,validator: (String? input){
+
                           if(input!.isEmpty){
                             return 'Name is required!';
                           }
-                          if(input.length<5)return 'Enter a valid name';
+
+                          if(input.length<5){
+                            return 'Please enter a valid name!';
+                          }
+
                           return null;
-                        }),
-                        10.heightBox,
-                        TextFieldWidget('Home Address', Icons.home_outlined, homeController,(String? input){
+
+                        },readOnly: false,OnTap: ()=>{}),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextFieldWidget(
+                            title: 'Home Address',iconData:  Icons.home_outlined,controller:  homeController,validator: (String? input){
+
                           if(input!.isEmpty){
                             return 'Home Address is required!';
                           }
+
                           return null;
-                        }),
-                        10.heightBox,
-                        TextFieldWidget('Business Address', Icons.card_travel, businessController,(String? input){
-                          if(input!.isEmpty){
-                            return 'Business Address is required!';
-                          }
-                          return null;
-                        }),
-                        10.heightBox,
-                        TextFieldWidget('Shopping Center', Icons.shopping_cart_outlined, shopController,(String? input){
-                          if(input!.isEmpty){
-                            return 'Shopping Center is required!';
-                          }
-                          return null;
-                        }),
-                        20.heightBox,
+
+                        },OnTap: ()async{
+                          Prediction? p = await  authController.showGoogleAutoComplete(context);
+
+                          /// now let's translate this selected address and convert it to latlng obj
+
+                          homeAddress = await authController.buildLongitudeAndLatitudeFromAddress(p!.description!);
+                          homeController.text = p.description!;
+                          ///store this information into firebase together once update is clicked
+
+
+
+                        },readOnly: true),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextFieldWidget(title: 'Business Address', iconData: Icons.card_travel,
+                            controller: businessController,validator: (String? input){
+                              if(input!.isEmpty){
+                                return 'Business Address is required!';
+                              }
+
+                              return null;
+                            },OnTap: ()async{
+                              Prediction? p = await  authController.showGoogleAutoComplete(context);
+
+                              /// now let's translate this selected address and convert it to latlng obj
+
+                              businessAddress = await authController.buildLongitudeAndLatitudeFromAddress(p!.description!);
+                              businessController.text = p.description!;
+                              ///store this information into firebase together once update is clicked
+
+                            },readOnly: true),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextFieldWidget(title: 'Shopping Center',
+                            iconData: Icons.shopping_cart_outlined, controller: shopController,validator: (String? input){
+                              if(input!.isEmpty){
+                                return 'Shopping Center is required!';
+                              }
+
+                              return null;
+                            },OnTap: ()async{
+                              Prediction? p = await  authController.showGoogleAutoComplete(context);
+
+                              /// now let's translate this selected address and convert it to latlng obj
+
+                              shoppingAddress = await authController.buildLongitudeAndLatitudeFromAddress(p!.description!);
+                              shopController.text = p.description!;
+                              ///store this information into firebase together once update is clicked
+
+                            },readOnly: true),
+                        const SizedBox(
+                          height: 30,
+                        ),
+
 
                         //instead of isLoading we are using variable the we define in authcontroller ---> doing this to seperate frontend and backend\
                         //and putting it in obx since it is statful widget
                         if(authController.isProfileuploading == true) CircularProgressIndicator(color: greenColor,).box.makeCentered()
                         else  greenButton('Update Info', (){
 
-                          if(formKey.currentState!.validate() == false){return;}
 
                           if(selectedImage==null){
                             //do Nothing here

@@ -7,6 +7,9 @@ class UserModel {
   String? name;
   String? image;
 
+  LatLng? homeAddressLatLang;
+  LatLng? bussinessAddresLatLang;
+  LatLng? shoppingAddressLatLang;
   //constructor for assigning values
   UserModel({this.name,this.mallAddress,this.hAddress,this.bAddress,this.image});
 
@@ -20,5 +23,8 @@ class UserModel {
     mallAddress = json['shopping_address'];
     name = json['name'];
     image = json['image'];
+    homeAddressLatLang = LatLng(json['home_latlng'].latitude, json['home_latlng'].longitude);
+    bussinessAddresLatLang = LatLng(json['business_latlng'].latitude, json['business_latlng'].longitude);
+    shoppingAddressLatLang = LatLng(json['shopping_latlng'].latitude, json['shopping_latlng'].longitude);
   }
 }

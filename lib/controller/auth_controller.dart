@@ -15,6 +15,7 @@ import '../constants/app_apikeys.dart';
 import '../models/user_models.dart';
 import '../screens/home.dart';
 import '../screens/profile_settings.dart';
+import 'package:geocoding/geocoding.dart' as geoCoding ;
 
 class AuthController extends GetxController{
 
@@ -124,7 +125,7 @@ class AuthController extends GetxController{
   }
 
 
-  storeUserInfo(File ? selectedImage,String name,String home,String business,String shop)async{
+  storeUserInfo(File ? selectedImage,String name,String home,String business,String shop,{LatLng? homeLatLng, LatLng? businessLatLng, LatLng? shoppingLatLng,})async{
 
     String url = await uploadImage(selectedImage!);    //here we get the imagurl fro above function
     String uid = FirebaseAuth.instance.currentUser!.uid;    //gives the uid of currentuser
@@ -135,6 +136,10 @@ class AuthController extends GetxController{
       'home_address': home,
       'business_address': business,
       'shopping_address': shop,
+      // storing latlong values on firebase so that we can use it late on choosing source place
+      'home_latlng': GeoPoint(homeLatLng!.latitude, homeLatLng.longitude),
+      'business_latlng': GeoPoint(businessLatLng!.latitude, businessLatLng.longitude),
+      'shopping_latlng': GeoPoint(shoppingLatLng!.latitude, shoppingLatLng.longitude),
     }).then((value) {
       isProfileuploading = false;
       Get.to(()=>HomeScreen());
@@ -144,7 +149,7 @@ class AuthController extends GetxController{
 
 
 
-  updateUserInfo(File? selectedImage, String name, String home, String business, String shop, {String url = '',}) async {
+  updateUserInfo(File? selectedImage, String name, String home, String business, String shop, {String url = '',LatLng? homeLatLng, LatLng? businessLatLng, LatLng? shoppingLatLng,}) async {
     String url_new = url;
     if (selectedImage != null) {
       url_new = await uploadImage(selectedImage);
@@ -156,6 +161,9 @@ class AuthController extends GetxController{
       'home_address': home,
       'business_address': business,
       'shopping_address': shop,
+      'home_latlng': GeoPoint(homeLatLng!.latitude, homeLatLng.longitude),
+      'business_latlng': GeoPoint(businessLatLng!.latitude, businessLatLng.longitude),
+      'shopping_latlng': GeoPoint(shoppingLatLng!.latitude, shoppingLatLng.longitude),
     },SetOptions(merge: true)).then((value) {
       isProfileuploading = false;
       Get.to(() => HomeScreen());
@@ -191,6 +199,15 @@ class AuthController extends GetxController{
       hint: "Search City",
     );
     return p;
+  }
+
+
+
+
+  Future<LatLng> buildLongitudeAndLatitudeFromAddress(String place) async {
+    //This return langitude and latitude
+    List<geoCoding.Location> locations = await geoCoding.locationFromAddress(place);
+    return LatLng(locations.first.latitude, locations.first.longitude);
   }
 
 }

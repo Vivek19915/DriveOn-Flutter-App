@@ -9,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_webservice/places.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -38,6 +40,11 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
 
   //making global key for form widget
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  //to store latitude and longitude
+  late LatLng homeAddress;
+  late LatLng businessAddress;
+  late LatLng shoppingAddress;
 
 
   //function to get image
@@ -96,34 +103,80 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
                     key: formKey,
                     child: Column(
                       children: [
-                        TextFieldWidget('Name', Icons.person_outlined, nameController,(String? input){
-                          if(input!.isEmpty){
-                            return 'Name is required!';
-                          }
-                          if(input.length<5)return 'Enter a valid name';
-                          return null;
-                        }),
+                        TextFieldWidget(
+                            title: 'Name',
+                            iconData: Icons.person_outlined,
+                            controller: nameController,
+                            validator: (String? input){
+                              if(input!.isEmpty){
+                                return 'Name is required!';
+                              }
+                              if(input.length<5)return 'Enter a valid name';
+                              return null;
+                            },
+                            OnTap: (){}
+                        ),
                         10.heightBox,
-                        TextFieldWidget('Home Address', Icons.home_outlined, homeController,(String? input){
-                          if(input!.isEmpty){
-                            return 'Home Address is required!';
-                          }
-                          return null;
-                        }),
+                        TextFieldWidget(
+                            title: 'Home Address',
+                            iconData: Icons.home_outlined,
+                            controller: homeController,
+                            validator: (String? input){
+                              if(input!.isEmpty){
+                                return 'Home Address is required!';
+                              }
+                              return null;
+                            },
+                            // readOnly: true,
+                            OnTap: () async {
+                              Prediction? p = await  authController.showGoogleAutoComplete(context);
+                              String selectedPlace = p!.description!;
+                              homeController.text = selectedPlace;
+                              // / now let's translate this selected address and convert it to latlng obj
+                              homeAddress = await authController.buildLongitudeAndLatitudeFromAddress(selectedPlace);
+                            }
+                        ),
+
                         10.heightBox,
-                        TextFieldWidget('Business Address', Icons.card_travel, businessController,(String? input){
-                          if(input!.isEmpty){
-                            return 'Business Address is required!';
-                          }
-                          return null;
-                        }),
+                        TextFieldWidget(
+                            title: 'Business Address',
+                            iconData: Icons.card_travel,
+                            controller: businessController,
+                            validator: (String? input){
+                              if(input!.isEmpty){
+                                return 'Business Address is required!';
+                              }
+                              return null;
+                            },
+                            // readOnly: true,
+                            OnTap: () async {
+                              Prediction? p = await  authController.showGoogleAutoComplete(context);
+                              String selectedPlace = p!.description!;
+                              businessController.text = selectedPlace;
+                              // / now let's translate this selected address and convert it to latlng obj
+                              businessAddress = await authController.buildLongitudeAndLatitudeFromAddress(selectedPlace);
+                            }
+                        ),
                         10.heightBox,
-                        TextFieldWidget('Shopping Center', Icons.shopping_cart_outlined, shopController,(String? input){
-                          if(input!.isEmpty){
-                            return 'Shopping Center is required!';
-                          }
-                          return null;
-                        }),
+                        TextFieldWidget(
+                            title: 'Shopping Center',
+                            iconData: Icons.shopping_cart_outlined,
+                            controller: shopController,
+                            validator: (String? input){
+                              if(input!.isEmpty){
+                                return 'Shopping Center is required!';
+                              }
+                              return null;
+                            },
+                            // readOnly: true,
+                            OnTap: () async {
+                              Prediction? p = await  authController.showGoogleAutoComplete(context);
+                              String selectedPlace = p!.description!;
+                              shopController.text = selectedPlace;
+                              // / now let's translate this selected address and convert it to latlng obj
+                              shoppingAddress = await authController.buildLongitudeAndLatitudeFromAddress(selectedPlace);
+                            }
+                        ),
                         20.heightBox,
 
                         //instead of isLoading we are using variable the we define in authcontroller ---> doing this to seperate frontend and backend\
@@ -142,7 +195,7 @@ class _ProfileSettingScreenState extends State<ProfileSettingScreen> {
                            setState(() {
                              authController.isProfileuploading = true;
                            });
-                           authController.storeUserInfo(selectedImage!, nameController.text, homeController.text, businessController.text, shopController.text);
+                           authController.storeUserInfo(selectedImage!, nameController.text, homeController.text, businessController.text, shopController.text,homeLatLng: homeAddress,businessLatLng: businessAddress,shoppingLatLng: shoppingAddress);
                          }
                        ),
                         20.heightBox

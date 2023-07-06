@@ -144,24 +144,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<String> showGoogleAutoComplete() async {
-    Prediction? p = await PlacesAutocomplete.show(
-      offset: 0,
-      radius: 1000,
-      strictbounds: false,
-      region: "in",
-      language: "en",
-      context: context,
-      mode: Mode.overlay,
-      apiKey: ApiConstants.APIKEY,
-      components: [new Component(Component.country, "in")],
-      types: [],
-      hint: "Search City",
-    );
-
-    return p!.description!;
-  }
-
   TextEditingController destinationController = TextEditingController();
   TextEditingController sourceController = TextEditingController();
 
@@ -195,12 +177,16 @@ class _HomeScreenState extends State<HomeScreen> {
             readOnly: true,
             onTap: () async {
               //To show seleted place on text filed controller
-
-              String selectedPlace = await showGoogleAutoComplete();
+              Prediction? p = await authController.showGoogleAutoComplete(context);
+              String selectedPlace = p!.description!;
               destinationController.text = selectedPlace;
 
-              List<geoCoding.Location> locations = await geoCoding.locationFromAddress(selectedPlace);  //it gives us the list of all info about location
-              destination = LatLng(locations.first.latitude, locations.first.longitude);     //stroring longitude and latitude
+              // List<geoCoding.Location> locations = await geoCoding.locationFromAddress(selectedPlace);  //it gives us the list of all info about location
+              // destination = LatLng(locations.first.latitude, locations.first.longitude);     //stroring longitude and latitude
+
+              //both are same
+              destination = await authController.buildLongitudeAndLatitudeFromAddress(selectedPlace);
+
               //so now lets put RED marker on the selected place which is destination
               markers.add(Marker(
                 markerId: MarkerId(selectedPlace),
@@ -290,7 +276,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       InkWell(
                         child: Row(
                           children: [
-                            "hello".text.color(Colors.black).size(12).fontWeight(FontWeight.w600).make(),
+                            //showing home address
+                            authController.myUserModel.value.hAddress!.text.color(Colors.black).size(12).fontWeight(FontWeight.w600).make(),
                           ],
                         ).box.width(Get.width).height(50).padding(EdgeInsets.symmetric(horizontal: 10)).color(Colors.white).withDecoration(BoxDecoration(
                             color: Colors.white,
@@ -310,7 +297,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       InkWell(
                         child: Row(
                           children: [
-                            "hello1".text.color(Colors.black).size(12).fontWeight(FontWeight.w600).make(),
+                            //showing users business address
+                            authController.myUserModel.value.bAddress!.text.color(Colors.black).size(12).fontWeight(FontWeight.w600).make(),
                           ],
                         ).box.width(Get.width).height(50).padding(EdgeInsets.symmetric(horizontal: 10)).color(Colors.white).withDecoration(BoxDecoration(
                             color: Colors.white,
@@ -328,12 +316,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       InkWell(
                         onTap: () async {
                           Get.back();
-                          String place = await showGoogleAutoComplete();
+                          Prediction? p = await authController.showGoogleAutoComplete(context);
+                          String place = p!.description!;
                           //assigning that place value to source controller
                           sourceController.text = place;
 
-                          List<geoCoding.Location> locationssource = await geoCoding.locationFromAddress(place); //it gives us the list of all info about location
-                          source = LatLng(locationssource.first.latitude, locationssource.first.longitude); //stroring longitude and latitude
+                          // List<geoCoding.Location> locationssource = await geoCoding.locationFromAddress(place); //it gives us the list of all info about location
+                          // source = LatLng(locationssource.first.latitude, locationssource.first.longitude); //stroring longitude and latitude
+
+                          source = await authController.buildLongitudeAndLatitudeFromAddress(place);
 
                           if (markers.length >= 2) {
                             markers.remove(markers.last);
