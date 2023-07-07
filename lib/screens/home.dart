@@ -17,6 +17,7 @@ import 'package:geocoding/geocoding.dart' as geoCoding ;
 import 'dart:ui' as ui;
 
 import '../controller/polyline_handler.dart';
+import '../widgets/text_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -64,6 +65,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //for opening drawer functionality
   GlobalKey<ScaffoldState> _scaffoldState = GlobalKey<ScaffoldState>();
+
+
+
+  //for payments card
+  String dropdownValue = '**** **** **** 8789';
+  List<String> list = <String>[
+    '**** **** **** 8789',
+    '**** **** **** 8921',
+    '**** **** **** 1233',
+    '**** **** **** 4352'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +320,10 @@ class _HomeScreenState extends State<HomeScreen> {
           myMapController!.animateCamera(CameraUpdate.newCameraPosition(
               CameraPosition(target: source, zoom: 14)));
           await getPolylines(source,destination);
-          setState(() {showSourceField = true;});
+          setState(() {
+            showSourceField = true;
+            buildRideConfirmationSheet();
+          });
         },
         child: CircleAvatar(radius: 20,backgroundColor: greenColor,child: Icon(Icons.my_location,color: Colors.white,),)));
   }
@@ -539,7 +554,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 myMapController!.animateCamera(CameraUpdate.newCameraPosition(
                     CameraPosition(target: source, zoom: 14)));
-                setState(() {});
+                setState(() {
+                  buildRideConfirmationSheet();
+                });
 
                   },
               child: Row(
@@ -585,7 +602,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 myMapController!.animateCamera(CameraUpdate.newCameraPosition(
                     CameraPosition(target: source, zoom: 14)));
-                setState(() {});
+                setState(() {
+                  buildRideConfirmationSheet();
+                });
 
               },
               child: Row(
@@ -646,7 +665,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ));
 
                 setState(() {
-
+                  buildRideConfirmationSheet();
                 });
               },
 
@@ -672,4 +691,157 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+
+
+
+
+
+
+  //bottom sheet fro ride conformation
+  buildRideConfirmationSheet() {
+    Get.bottomSheet(Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        10.heightBox,
+        Container().box.width(Get.width*0.2).height(8).withDecoration(BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.grey)).makeCentered(),
+        20.heightBox,
+        textWidget(title: 'Select an option:', fontSize: 18, fontWeight: FontWeight.bold, ),
+        20.heightBox,
+        buildDriversList(),
+        20.heightBox,
+        Divider().box.padding(EdgeInsets.only(right: 20)).make(),
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(child: buildPaymentCardWidget()),
+              MaterialButton(
+                onPressed: () {},
+                child: textWidget(
+                  title: 'Confirm Ride',
+                  color: Colors.white,
+                ),
+                color: greenColor,
+                shape: StadiumBorder(),
+              )
+            ],
+          ),
+        )
+      ],
+    ).box.width(Get.width).height(Get.height * 0.4).padding(EdgeInsets.only(left: 20)).withDecoration(BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.only(
+          topRight: Radius.circular(12), topLeft: Radius.circular(12)),
+    )).make());
+  }
+
+  int selectedRide = 0;
+
+  buildDriversList() {
+    return Container(
+      height: 90,
+      width: Get.width,
+      child: StatefulBuilder(builder: (context, set) {
+        return ListView.builder(
+          itemBuilder: (ctx, i) {
+            return InkWell(
+              onTap: () {
+                set(() {
+                  selectedRide = i;
+                });
+              },
+              child: buildDriverCard(selectedRide == i),
+            );
+          },
+          itemCount: 5,
+          scrollDirection: Axis.horizontal,
+        );
+      }),
+    );
+  }
+
+  buildDriverCard(bool selected) {
+    return Container(
+      margin: EdgeInsets.only(right: 8, left: 8, top: 4, bottom: 4),
+      height: 85,
+      width: 165,
+      decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+                color: selected
+                    ? Color(0xff2DBB54).withOpacity(0.2)
+                    : Colors.grey.withOpacity(0.2),
+                offset: Offset(0, 5),
+                blurRadius: 5,
+                spreadRadius: 1)
+          ],
+          borderRadius: BorderRadius.circular(12),
+          color: selected ? Color(0xff2DBB54) : Colors.grey),
+      child: Stack(
+        children: [
+          Container(
+            padding: EdgeInsets.only(left: 10, top: 10, bottom: 10, right: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                textWidget(
+                    title: 'Standard',
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700),
+                textWidget(
+                    title: '\$9.90',
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500),
+                textWidget(
+                    title: '3 MIN',
+                    color: Colors.white.withOpacity(0.8),
+                    fontWeight: FontWeight.normal,
+                    fontSize: 12),
+              ],
+            ),
+          ),
+          Positioned(
+              right: -20,
+              top: 0,
+              bottom: 0,
+              child: Image.asset('assets/mask_group_2.png'))
+        ],
+      ),
+    );
+  }
+
+  buildPaymentCardWidget() {
+    return Container(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image.asset('assets/visa.png', width: 40,),
+          SizedBox(
+            width: 10,
+          ),
+          DropdownButton<String>(
+            value: dropdownValue,
+            icon: const Icon(Icons.keyboard_arrow_down),
+            elevation: 16,
+            style: const TextStyle(color: Colors.deepPurple),
+            underline: Container(),
+            onChanged: (String? value) {
+              // This is called when the user selects an item.
+              setState(() {
+                dropdownValue = value!;
+              });
+            },
+            items: list.map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: textWidget(title: value),
+              );
+            }).toList(),
+          )
+        ],
+      ),
+    );
+  }
 }
