@@ -2,6 +2,8 @@ import 'package:driveon_flutter_app/screens/my_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show ByteData, Uint8List, rootBundle;
@@ -96,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
           buildBottomSheet(),
         ],
       ),
+
     );
   }
 
@@ -289,20 +292,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Widget buildCurrentLocationIcon() {
-    return Align(
-      alignment: Alignment.bottomRight,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 30, right: 8),
-        child: CircleAvatar(
-          radius: 20,
-          backgroundColor: Colors.green,
-          child: Icon(
-            Icons.my_location,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
+    return Align(alignment: Alignment.bottomRight ,heightFactor: 19,widthFactor:8.7,child: InkWell(
+        onTap: () async {
+
+          Position position = await authController.determineLiveLocation();
+
+          source = LatLng(position.latitude, position.longitude);
+          sourceController.text = "";
+
+          //gettting name of current location on source part
+          authController.GetLiveLocationAddressFromLatLong(position,sourceController);
+
+          markers.add(Marker(markerId: const MarkerId('currentLocation'),position: source,icon: BitmapDescriptor.fromBytes(markIconsforSource)));
+
+          myMapController!.animateCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(target: source, zoom: 14)));
+          await getPolylines(source,destination);
+          setState(() {showSourceField = true;});
+        },
+        child: CircleAvatar(radius: 20,backgroundColor: greenColor,child: Icon(Icons.my_location,color: Colors.white,),)));
   }
 
 

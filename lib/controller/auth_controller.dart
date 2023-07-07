@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
@@ -209,5 +211,54 @@ class AuthController extends GetxController{
     List<geoCoding.Location> locations = await geoCoding.locationFromAddress(place);
     return LatLng(locations.first.latitude, locations.first.longitude);
   }
+
+
+
+
+///function to determine current position -- live location
+  Future<Position> determineLiveLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    print("hello");
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    print("hellojygghh1");
+    if (!serviceEnabled) {
+      print("hello1");
+      return Future.error('Location services are disabled');
+    }
+    print("helloasdasdasdasdasdadjygghh1");
+    permission = await Geolocator.checkPermission();
+    print("hello3");
+    if (permission == LocationPermission.denied) {
+      print("hello2");
+      permission = await Geolocator.requestPermission();
+
+      if (permission == LocationPermission.denied) {
+        print("hello4");
+        return Future.error("Location permission denied");
+      }
+    }
+    print("hello5");
+    if (permission == LocationPermission.deniedForever) {
+      print("hello6");
+      return Future.error('Location permissions are permanently denied');
+    }
+
+    Position position = await Geolocator.getCurrentPosition();
+    print("hello7");
+    return position;
+  }
+
+
+
+//function to determine  position name using live location
+  Future<void> GetLiveLocationAddressFromLatLong(Position position,controller)async {
+    List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+    print(placemarks);
+    Placemark place = placemarks[0];
+    controller.text = '${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}, ${place.country}';
+  }
+
+
 
 }
