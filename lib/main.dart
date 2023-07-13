@@ -1,3 +1,4 @@
+import 'package:driveon_flutter_app/screens/decision_screen/decission_screen.dart';
 import 'package:driveon_flutter_app/screens/login_screen.dart';
 import 'package:driveon_flutter_app/screens/profile_settings.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -37,7 +38,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: LoginScreen(),
+      home: DecisionScreen(),
     );
   }
 }

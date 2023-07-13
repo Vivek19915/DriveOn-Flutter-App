@@ -1,5 +1,8 @@
+import 'package:driveon_flutter_app/screens/login_screen.dart';
 import 'package:driveon_flutter_app/screens/my_profile.dart';
 import 'package:driveon_flutter_app/screens/payment.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
@@ -450,9 +453,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 buildDrawerItem(title: 'Promo Codes', onPressed: () {}),
                 buildDrawerItem(title: 'Settings', onPressed: () {}),
                 buildDrawerItem(title: 'Support', onPressed: () {}),
-                buildDrawerItem(title: 'Log Out', onPressed: () {}),
-
-
+                buildDrawerItem(title: 'Log Out', onPressed: () {
+                  FirebaseAuth.instance.signOut();
+                  Get.to(()=>LoginScreen());
+                }),
                   ],
                 ).box.padding(EdgeInsets.symmetric(horizontal: 30)).make(),
 

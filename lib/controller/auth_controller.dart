@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:driveon_flutter_app/screens/driver/profile_setup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,8 @@ class AuthController extends GetxController{
   dynamic credentials;       // store the phone authentication credentials.
 
   var isProfileuploading = false;
+
+  bool isLoginAsDriver = false;
 
   phoneAuth(String phone) async {
     try {
@@ -91,17 +94,36 @@ class AuthController extends GetxController{
     if(user!=null){
       //means user already login
       //step 2 --> check whether user profile exist or not
-      FirebaseFirestore.instance.collection('users').doc(user.uid).get()
-          .then((value) {
-            if(value.exists){
-              //means user profile exists ---> then navigate user to home screen
-              Get.to(()=>HomeScreen());
-            }
-            else{
-              //means user does not exists then takes it info
-              Get.to(()=>ProfileSettingScreen());
-            }
-      });
+
+      if(isLoginAsDriver = true){
+        FirebaseFirestore.instance.collection('drivers').doc(user.uid).get()
+            .then((value) {
+          if(value.exists){
+            //means driver profile exists ---> then navigate user to home screen
+            print("DriverHomeScreen");
+          }
+          else{
+            //means user does not exists then takes it info
+            Get.to(()=>DriverProfileSetup());
+          }
+        });
+      }
+      else{
+        FirebaseFirestore.instance.collection('users').doc(user.uid).get()
+            .then((value) {
+          if(value.exists){
+            //means user profile exists ---> then navigate user to home screen
+            Get.to(()=>HomeScreen());
+          }
+          else{
+            //means user does not exists then takes it info
+            Get.to(()=>ProfileSettingScreen());
+          }
+        });
+      }
+
+
+
     }
   }
 
@@ -147,9 +169,6 @@ class AuthController extends GetxController{
       Get.to(()=>HomeScreen());
     });
   }
-
-
-
 
   updateUserInfo(File? selectedImage, String name, String home, String business, String shop, {String url = '',LatLng? homeLatLng, LatLng? businessLatLng, LatLng? shoppingLatLng,}) async {
     String url_new = url;
@@ -282,6 +301,36 @@ class AuthController extends GetxController{
         .collection('cards')
         .snapshots().listen((event) {
       userCards.value = event.docs;
+    });
+  }
+
+
+
+//storing sriver info
+  storeDriverProfile(
+      {
+      File? selectedImage,
+      String ?name,
+      String ?phone,
+      LatLng? liveLocation,
+      String ?email,
+        String url = '',
+      }) async {
+    String url_new = url;
+    if (selectedImage != null) {
+      url_new = await uploadImage(selectedImage);
+    }
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    FirebaseFirestore.instance.collection('drivers').doc(uid).set({
+      'image': url_new,
+      'name': name,
+      'email': email,
+      'phone_no': phone,
+      'live_location': GeoPoint(liveLocation!.latitude, liveLocation.longitude),
+    },SetOptions(merge: true)).then((value) {
+      isProfileuploading = true;
+      print("done");
+
     });
   }
 
