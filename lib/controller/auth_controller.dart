@@ -261,4 +261,29 @@ class AuthController extends GetxController{
 
 
 
+
+  //for card section---->>>>>
+  storeUserCard(String number, String expiry, String cvv, String name) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('cards')
+        .add({'name': name, 'number': number, 'cvv': cvv, 'expiry': expiry});
+
+    return true;
+  }
+
+  RxList userCards = [].obs;
+
+  getUserCards() {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('cards')
+        .snapshots().listen((event) {
+      userCards.value = event.docs;
+    });
+  }
+
+
 }

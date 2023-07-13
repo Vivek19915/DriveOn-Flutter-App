@@ -1,4 +1,5 @@
 import 'package:driveon_flutter_app/screens/my_profile.dart';
+import 'package:driveon_flutter_app/screens/payment.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
@@ -443,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
 
 
-                buildDrawerItem(title: 'Payment History', onPressed: () {}),
+                buildDrawerItem(title: 'Payment Method', onPressed: () {Get.to(()=>PaymentScreen());}),
                 buildDrawerItem(title: 'Ride History', onPressed: () {}, isVisible: true),
                 buildDrawerItem(title: 'Invite Friends', onPressed: () {}),
                 buildDrawerItem(title: 'Promo Codes', onPressed: () {}),
